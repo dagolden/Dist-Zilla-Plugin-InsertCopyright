@@ -1,5 +1,7 @@
 Revision history for Dist-Zilla-Plugin-InsertCopyright
 
 {{$NEXT}}
+
+0.001     2011-07-11 21:16:16 America/New_York
     - Initial release to CPAN
 
