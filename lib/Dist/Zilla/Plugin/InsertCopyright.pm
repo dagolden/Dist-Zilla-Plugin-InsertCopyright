@@ -6,7 +6,7 @@ use utf8;
 package Dist::Zilla::Plugin::InsertCopyright;
 # ABSTRACT: Insert copyright statement into source code files
 
-use PPI;
+use PPI::Document;
 use Moose;
 
 with 'Dist::Zilla::Role::FileMunger';
@@ -16,7 +16,7 @@ with 'Dist::Zilla::Role::FileMunger';
 sub munge_file {
     my ($self, $file) = @_;
 
-    return $self->_munge_perl($file) if $file->name    =~ /\.(?:pm|pl)$/i;
+    return $self->_munge_perl($file) if $file->name    =~ /\.(?:pm|pl|t)$/i;
     return $self->_munge_perl($file) if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
     return;
 }
@@ -33,6 +33,7 @@ sub _munge_perl {
   my ($self, $file) = @_;
 
   my @copyright = (
+    '',
     "This file is part of " . $self->zilla->name,
     '',
     split(/\n/, $self->zilla->license->notice),
@@ -52,24 +53,23 @@ sub _munge_perl {
     foreach my $c ( @{ $comments } ) {
       if ( $c =~ /^(\s*)(\#\s+COPYRIGHT\b)$/xms ) {
         my ( $ws, $comment ) =  ( $1, $2 );
-        my $code = join( "\n", map { "$ws $_" } @copyright_comment );
+        my $code = join( "\n", map { "$ws$_" } @copyright_comment );
         $c->set_content("$code\n");
+        $self->log_debug("Added copyright to " . $file->name);
+        last;
       }
     }
     $file->content( $doc->serialize );
   }
-  else {
-    my $fn = $file->name;
-    $self->log( "File: $fn"
-      . ' consider adding a "# COPYRIGHT" commment'
-    );
-  }
+
   return;
 }
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
+
+# COPYRIGHT
 
 __END__
 
@@ -84,14 +84,16 @@ In your F<dist.ini>:
 
     [InsertCopyright]
 
-In your source files:
+In your source files (before C<__END__>):
 
   # COPYRIGHT
 
 =head1 DESCRIPTION
 
 This module replaces a special C<# COPYRIGHT> comment in your Perl source
-files with a short notice appropriate to your declared copyright.
+files with a short notice appropriate to your declared copyright.  The
+special comment B<must> be placed before C<__END__>.  Only the first such
+comment will be replaced.
 
 It is inspired by excellent L<Dist::Zilla::Plugin::Prepender> but gives control
 of the copyright notice placement instead of always adding it at the start of a
