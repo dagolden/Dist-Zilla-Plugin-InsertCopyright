@@ -8,6 +8,7 @@ package Dist::Zilla::Plugin::InsertCopyright;
 
 use PPI::Document;
 use Moose;
+use Carp qw/croak/;
 
 with 'Dist::Zilla::Role::FileMunger';
 
