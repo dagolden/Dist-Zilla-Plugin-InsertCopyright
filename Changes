@@ -2,6 +2,10 @@ Revision history for Dist-Zilla-Plugin-InsertCopyright
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Carp wasn't being loaded for calling croak
+
 0.001     2011-07-11 21:16:16 America/New_York
     - Initial release to CPAN
 
