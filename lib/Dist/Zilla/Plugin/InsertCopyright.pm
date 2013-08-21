@@ -5,6 +5,7 @@ use utf8;
 
 package Dist::Zilla::Plugin::InsertCopyright;
 # ABSTRACT: Insert copyright statement into source code files
+# VERSION
 
 use PPI::Document;
 use Moose;
