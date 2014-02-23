@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use Test::DZil;
-use Path::Class;
+use Path::Tiny;
 use File::pushd 1.00 qw/tempd pushd/;
 use Test::More 0.92;
 
-my $corpus_dir = dir(qw(corpus foo))->absolute;
+my $corpus_dir = path(qw(corpus foo))->absolute;
 my $tempd = tempd; # isolate effects
 
 my $lib_src = << 'HERE';
@@ -44,10 +44,10 @@ my $tzil = Builder->from_config(
 $tzil->build;
 
 # check module & script
-my $dir = $tzil->tempdir->subdir('build');
-check_copyright( file($dir, 'lib', 'Bar.pm') );
-check_copyright( file($dir, 'bin', 'foobar') );
-check_copyright( file($dir, 'example', 'latin1') );
+my $dir = path($tzil->tempdir)->child('build');
+check_copyright( path($dir, 'lib', 'Bar.pm') );
+check_copyright( path($dir, 'bin', 'foobar') );
+check_copyright( path($dir, 'example', 'latin1') );
 
 done_testing;
 exit;
@@ -56,9 +56,7 @@ sub check_copyright {
     my ($path) = @_;
 
     # slurp file
-    open my $fh, '<', $path or die "cannot open '$path': $!";
-    my @lines = split /\n/, do { local $/; <$fh> };
-    close $fh;
+    my @lines = $path->lines( {chomp => 1} );
 
     my ($hash_count, $offset) = (0,0);
     for ( ; $offset < $#lines; $offset++ ) {
