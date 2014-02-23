@@ -8,7 +8,7 @@ use Path::Class;
 use File::pushd 1.00 qw/tempd pushd/;
 use Test::More 0.92;
 
-my $corpus_dir = dir(qw(t foo))->absolute;
+my $corpus_dir = dir(qw(corpus foo))->absolute;
 my $tempd = tempd; # isolate effects
 
 my $lib_src = << 'HERE';
