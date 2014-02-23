@@ -18,6 +18,8 @@ with 'Dist::Zilla::Role::FileMunger';
 sub munge_file {
     my ($self, $file) = @_;
 
+    return if $file->encoding eq 'bytes';
+
     return $self->_munge_perl($file) if $file->name    =~ /\.(?:pm|pl|t)$/i;
     return $self->_munge_perl($file) if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
     return;

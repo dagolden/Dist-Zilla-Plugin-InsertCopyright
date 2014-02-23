@@ -47,6 +47,7 @@ $tzil->build;
 my $dir = $tzil->tempdir->subdir('build');
 check_copyright( file($dir, 'lib', 'Bar.pm') );
 check_copyright( file($dir, 'bin', 'foobar') );
+check_copyright( file($dir, 'example', 'latin1') );
 
 done_testing;
 exit;
