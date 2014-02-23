@@ -16,11 +16,11 @@ with 'Dist::Zilla::Role::FileMunger';
 # -- public methods
 
 sub munge_file {
-    my ($self, $file) = @_;
+    my ( $self, $file ) = @_;
 
     return if $file->encoding eq 'bytes';
 
-    return $self->_munge_perl($file) if $file->name    =~ /\.(?:pm|pl|t)$/i;
+    return $self->_munge_perl($file) if $file->name =~ /\.(?:pm|pl|t)$/i;
     return $self->_munge_perl($file) if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
     return;
 }
@@ -34,39 +34,36 @@ sub munge_file {
 #
 
 sub _munge_perl {
-  my ($self, $file) = @_;
+    my ( $self, $file ) = @_;
 
-  my @copyright = (
-    '',
-    "This file is part of " . $self->zilla->name,
-    '',
-    split(/\n/, $self->zilla->license->notice),
-    '',
-  );
+    my @copyright = (
+        '', "This file is part of " . $self->zilla->name,
+        '', split( /\n/, $self->zilla->license->notice ), '',
+    );
 
-  my @copyright_comment = map { length($_) ? "# $_" : '#' } @copyright;
+    my @copyright_comment = map { length($_) ? "# $_" : '#' } @copyright;
 
-  my $content = $file->content;
+    my $content = $file->content;
 
-  my $doc = PPI::Document->new(\$content)
-    or croak( PPI::Document->errstr );
+    my $doc = PPI::Document->new( \$content )
+      or croak( PPI::Document->errstr );
 
-  my $comments = $doc->find('PPI::Token::Comment');
+    my $comments = $doc->find('PPI::Token::Comment');
 
-  if ( ref($comments) eq 'ARRAY' ) {
-    foreach my $c ( @{ $comments } ) {
-      if ( $c =~ /^(\s*)(\#\s+COPYRIGHT\b)$/xms ) {
-        my ( $ws, $comment ) =  ( $1, $2 );
-        my $code = join( "\n", map { "$ws$_" } @copyright_comment );
-        $c->set_content("$code\n");
-        $self->log_debug("Added copyright to " . $file->name);
-        last;
-      }
+    if ( ref($comments) eq 'ARRAY' ) {
+        foreach my $c ( @{$comments} ) {
+            if ( $c =~ /^(\s*)(\#\s+COPYRIGHT\b)$/xms ) {
+                my ( $ws, $comment ) = ( $1, $2 );
+                my $code = join( "\n", map { "$ws$_" } @copyright_comment );
+                $c->set_content("$code\n");
+                $self->log_debug( "Added copyright to " . $file->name );
+                last;
+            }
+        }
+        $file->content( $doc->serialize );
     }
-    $file->content( $doc->serialize );
-  }
 
-  return;
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;
