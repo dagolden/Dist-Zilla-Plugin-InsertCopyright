@@ -2,6 +2,8 @@ Revision history for Dist-Zilla-Plugin-InsertCopyright
 
 {{$NEXT}}
 
+0.004     2014-03-16 19:33:26+01:00 Europe/Paris
+
     [CHANGED]
 
     - Optimized with cached PPI document
