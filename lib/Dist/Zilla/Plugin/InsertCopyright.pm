@@ -11,31 +11,21 @@ use PPI::Document;
 use Moose;
 use Carp qw/croak/;
 
-with 'Dist::Zilla::Role::FileMunger';
+#<<< No perltidy
+with(
+    'Dist::Zilla::Role::FileMunger',
+    'Dist::Zilla::Role::PPI',
+);
+#>>>
 
-# -- public methods
+has copyright_lines => (
+    is         => 'ro',
+    isa        => 'ArrayRef',
+    lazy_build => 1,
+);
 
-sub munge_file {
-    my ( $self, $file ) = @_;
-
-    return if $file->encoding eq 'bytes';
-
-    return $self->_munge_perl($file) if $file->name =~ /\.(?:pm|pl|t)$/i;
-    return $self->_munge_perl($file) if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
-    return;
-}
-
-# -- private methods
-
-#
-# $self->_munge_perl($file);
-#
-# munge content of perl $file: add stuff at a #COPYRIGHT comment
-#
-
-sub _munge_perl {
-    my ( $self, $file ) = @_;
-
+sub _build_copyright_lines {
+    my ($self) = @_;
     my @copyright = (
         '', "This file is part of " . $self->zilla->name,
         '', split( /\n/, $self->zilla->license->notice ), '',
@@ -43,18 +33,45 @@ sub _munge_perl {
 
     my @copyright_comment = map { length($_) ? "# $_" : '#' } @copyright;
 
-    my $content = $file->content;
+    return \@copyright_comment;
+}
 
-    my $doc = PPI::Document->new( \$content )
-      or croak( PPI::Document->errstr );
+# -- public methods
+
+sub munge_file {
+    my ( $self, $file ) = @_;
+
+    if (   $file->name =~ /\.(?:pm|pl|t)$/i
+        || $file->content =~ /^#!(?:.*)perl(?:$|\s)/ )
+    {
+        $self->_munge_perl($file);
+    }
+
+    return;
+}
+
+# -- private methods
+
+#
+# $self->_munge_perl($file, $lines);
+#
+# munge content of perl $file: add stuff at a #COPYRIGHT comment
+#
+
+sub _munge_perl {
+    my ( $self, $file ) = @_;
+
+    my $doc = $self->ppi_document_for_file($file);
 
     my $comments = $doc->find('PPI::Token::Comment');
+
+    my $lines = $self->copyright_lines;
 
     if ( ref($comments) eq 'ARRAY' ) {
         foreach my $c ( @{$comments} ) {
             if ( $c =~ /^(\s*)(\#\s+COPYRIGHT\b)$/xms ) {
                 my ( $ws, $comment ) = ( $1, $2 );
-                my $code = join( "\n", map { "$ws$_" } @copyright_comment );
+                my $code = join( "\n", map { "$ws$_" } @$lines );
                 $c->set_content("$code\n");
                 $self->log_debug( "Added copyright to " . $file->name );
                 last;
