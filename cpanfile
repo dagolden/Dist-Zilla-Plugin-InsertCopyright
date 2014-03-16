@@ -1,5 +1,6 @@
 requires "Carp" => "0";
 requires "Dist::Zilla::Role::FileMunger" => "0";
+requires "Dist::Zilla::Role::PPI" => "0";
 requires "Moose" => "0";
 requires "PPI::Document" => "0";
 requires "perl" => "5.008001";
@@ -28,7 +29,7 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
-  requires "Dist::Zilla" => "5.013";
+  requires "Dist::Zilla" => "5.014";
   requires "Dist::Zilla::Plugin::Encoding" => "0";
   requires "Dist::Zilla::PluginBundle::DAGOLDEN" => "0.060";
   requires "File::Spec" => "0";
