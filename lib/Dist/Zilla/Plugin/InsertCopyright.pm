@@ -77,7 +77,7 @@ sub _munge_perl {
                 last;
             }
         }
-        $file->content( $doc->serialize );
+        $self->save_ppi_document_to_file( $doc, $file );
     }
 
     return;
